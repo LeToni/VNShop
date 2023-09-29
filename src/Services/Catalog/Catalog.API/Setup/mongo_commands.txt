@@ -1,0 +1,6 @@
+mongosh "mongodb://localhost:27017" --user rootuser --password rootpass
+
+use catalogdb;
+
+db.catalog_item.insertMany(catalog_items)
+db.catalog_category.insertMany(catalog_categories)
