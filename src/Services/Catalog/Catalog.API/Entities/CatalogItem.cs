@@ -1,7 +1,4 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-
-namespace Catalog.API.Entities
+﻿namespace Catalog.API.Entities
 {
     public class CatalogItem
     {
@@ -11,10 +8,10 @@ namespace Catalog.API.Entities
 
         [BsonElement("title")]
         public string Name { get; set; }
-        public decimal price { get; set; }
-        public string description { get; set; }
-        public string category { get; set; }
-        public string image { get; set; }
-        public CatalogRating rating { get; set; }
+        public decimal Price { get; set; }
+        public string Description { get; set; }
+        public CatalogCategory Category { get; set; }
+        public string Image { get; set; }
+        public CatalogRating Rating { get; set; }
     }
 }

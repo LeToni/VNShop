@@ -2,7 +2,7 @@
 {
     public class CatalogRating
     {
-        public double rate { get; set; }
-        public long count { get; set; }
+        public double Rate { get; set; }
+        public long Count { get; set; }
     }
 }
