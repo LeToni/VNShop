@@ -2,23 +2,33 @@
 
 public class CatalogRepository : ICatalogRepository
 {
-    public Task<CatalogItem> GetCatalogItem(string id)
-    {
-        throw new NotImplementedException();
+    private readonly ICatalogContext _catalogContext;
+
+    public CatalogRepository(ICatalogContext catalogContext) {
+        _catalogContext = catalogContext ?? throw new ArgumentNullException(nameof(catalogContext));
     }
 
-    public Task<IEnumerable<CatalogItem>> GetCatalogItems()
+    public async Task<CatalogItem> GetCatalogItem(string id)
     {
-        throw new NotImplementedException();
+        return await _catalogContext.Items.Find(ci => ci.Id == id).FirstOrDefaultAsync();
     }
 
-    public Task<IEnumerable<CatalogItem>> GetCatalogItemsByCategory(string categoryName)
+    public async Task<IEnumerable<CatalogItem>> GetCatalogItems()
     {
-        throw new NotImplementedException();
+        return await _catalogContext.Items.Find(ci => true).ToListAsync();
     }
 
-    public Task<IEnumerable<CatalogItem>> GetCatalogItemsByName(string name)
+    public async Task<IEnumerable<CatalogItem>> GetCatalogItemsByCategory(string categoryName)
     {
-        throw new NotImplementedException();
+        FilterDefinition<CatalogItem> filter = Builders<CatalogItem>.Filter.Eq(ci => ci.Category.Name, categoryName);
+
+        return await _catalogContext.Items.Find(filter).ToListAsync();
+    }
+
+    public async Task<IEnumerable<CatalogItem>> GetCatalogItemsByName(string name)
+    {
+        FilterDefinition<CatalogItem> filter = Builders<CatalogItem>.Filter.ElemMatch(ci => ci.Name, name);
+       
+       return await _catalogContext.Items.Find(filter).ToListAsync();
     }
 }
