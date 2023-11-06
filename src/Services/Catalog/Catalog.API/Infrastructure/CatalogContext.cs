@@ -12,7 +12,7 @@ public class CatalogContext : ICatalogContext
 
     }
 
-    public IMongoCollection<CatalogItem> Items { get; }
+    public IMongoCollection<CatalogItem> Items { get; init; }
 
-    public IMongoCollection<CatalogCategory> Categories { get; }
+    public IMongoCollection<CatalogCategory> Categories { get; init; }
 }
