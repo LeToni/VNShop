@@ -7,8 +7,8 @@ public class CatalogContext : ICatalogContext
         var client = new MongoClient(configuration.GetValue<string>("DatabaseSettings:ConnectionString"));
         var database = client.GetDatabase(configuration.GetValue<string>("DatabaseSettings:DatabaseName"));
 
-        Items = database.GetCollection<CatalogItem>(configuration.GetValue<string>("DatabaseSettings:catalog_items"));
-        Categories = database.GetCollection<CatalogCategory>(configuration.GetValue<string>("DatabaseSettings:catalog_category"));
+        Items = database.GetCollection<CatalogItem>(configuration.GetValue<string>("DatabaseSettings:CatalogItemsCollectionName"));
+        Categories = database.GetCollection<CatalogCategory>(configuration.GetValue<string>("DatabaseSettings:CatalogCategoriesCollectionName"));
 
     }
 

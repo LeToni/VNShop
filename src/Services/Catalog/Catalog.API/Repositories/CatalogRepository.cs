@@ -1,4 +1,6 @@
-﻿namespace Catalog.API.Repositories;
+﻿using Catalog.API.ViewModel;
+
+namespace Catalog.API.Repositories;
 
 public class CatalogRepository : ICatalogRepository
 {
@@ -8,27 +10,65 @@ public class CatalogRepository : ICatalogRepository
         _catalogContext = catalogContext ?? throw new ArgumentNullException(nameof(catalogContext));
     }
 
-    public async Task<CatalogItem> GetCatalogItem(string id)
+    public async Task<IEnumerable<CatalogCategory>> GetCatalogCategoriesAsync()
     {
-        return await _catalogContext.Items.Find(ci => ci.Id == id).FirstOrDefaultAsync();
+        var categories = await _catalogContext.Categories.Find(_ => true).ToListAsync();
+
+        return categories;
     }
 
-    public async Task<IEnumerable<CatalogItem>> GetCatalogItems()
+    public async Task<CatalogItem> GetCatalogItemAsync(string id)
     {
-        return await _catalogContext.Items.Find(ci => true).ToListAsync();
+        return await _catalogContext.Items
+            .Find(ci => ci.Id == id)
+            .FirstOrDefaultAsync();
     }
 
-    public async Task<IEnumerable<CatalogItem>> GetCatalogItemsByCategory(string categoryName)
+    public async Task<PaginatedItemsViewModel<CatalogItem>> GetCatalogItemsAsync(int pageIndex,int pageSize)
     {
-        FilterDefinition<CatalogItem> filter = Builders<CatalogItem>.Filter.Eq(ci => ci.Category.Name, categoryName);
+        var totalItems = await _catalogContext.Items
+            .Find(_ => true)
+            .CountDocumentsAsync();
 
-        return await _catalogContext.Items.Find(filter).ToListAsync();
+        var itemsOnPage = await _catalogContext.Items.Find(_ => true)
+           .ToListAsync();
+
+        var pageItemModel = new PaginatedItemsViewModel<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage);
+
+        return pageItemModel;
     }
 
-    public async Task<IEnumerable<CatalogItem>> GetCatalogItemsByName(string name)
+    public async Task<PaginatedItemsViewModel<CatalogItem>> GetCatalogItemsByCategoryAsync(string categoryName, int pageIndex, int pageSize)
     {
-        FilterDefinition<CatalogItem> filter = Builders<CatalogItem>.Filter.ElemMatch(ci => ci.Name, name);
-       
-       return await _catalogContext.Items.Find(filter).ToListAsync();
+        var totalItems = await _catalogContext.Items
+            .Find(x => x.Category == categoryName)
+            .CountDocumentsAsync();
+
+        var itemsOnPage = await _catalogContext.Items
+            .Find(x => x.Category == categoryName)
+            .Skip(pageIndex * pageSize)
+            .Limit(pageSize)
+            .ToListAsync();
+
+        var pageItemModel = new PaginatedItemsViewModel<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage);
+
+        return pageItemModel;
+    }
+
+    public async Task<PaginatedItemsViewModel<CatalogItem>> GetCatalogItemsByNameAsync(string name, int pageIndex, int pageSize)
+    {
+        var totalItems = await _catalogContext.Items
+            .Find(x => x.Name == name)
+            .CountDocumentsAsync();
+
+        var itemsOnPage = await _catalogContext.Items
+            .Find(x => x.Name == name)
+            .Skip(pageIndex * pageSize)
+            .Limit(pageSize)
+            .ToListAsync();
+
+        var pageItemModel = new PaginatedItemsViewModel<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage);
+
+        return pageItemModel;
     }
 }

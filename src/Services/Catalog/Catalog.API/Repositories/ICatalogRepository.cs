@@ -1,9 +1,13 @@
-﻿namespace Catalog.API.Repositories;
+﻿using Catalog.API.ViewModel;
+
+namespace Catalog.API.Repositories;
 
 public interface ICatalogRepository
 {
-    Task<IEnumerable<CatalogItem>> GetCatalogItems();
-    Task<CatalogItem> GetCatalogItem(string id);
-    Task<IEnumerable<CatalogItem>> GetCatalogItemsByName(string name);
-    Task<IEnumerable<CatalogItem>> GetCatalogItemsByCategory(string categoryName);
+    Task<PaginatedItemsViewModel<CatalogItem>> GetCatalogItemsAsync(int pageIndex, int pageSize);
+    Task<CatalogItem> GetCatalogItemAsync(string id);
+    Task<PaginatedItemsViewModel<CatalogItem>> GetCatalogItemsByNameAsync(string name, int pageIndex, int pageSize);
+    Task<PaginatedItemsViewModel<CatalogItem>> GetCatalogItemsByCategoryAsync(string categoryName, int pageIndex, int pageSize);
+
+    Task<IEnumerable<CatalogCategory>> GetCatalogCategoriesAsync();
 }
