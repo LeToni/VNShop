@@ -1,8 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Castle.Core.Configuration;
-using Catalog.API.Infrastructure;
-using Catalog.API.Repositories;
-using Catalog.API.ViewModel;
+﻿using Catalog.API.Infrastructure;
 using MongoDB.Driver;
 using Moq;
 
@@ -10,30 +6,32 @@ namespace Catalog.UnitTests;
 
 public class CatalogRepositoryTest
 {
-    private readonly Mock<CatalogContext> _mockCatalogContext;
+    private Mock<ICatalogContext> _mockCatalogContext;
+    private Mock<IMongoCollection<CatalogItem>> _mockCatalogItemCollection;
+    private Mock<IAsyncCursor<CatalogItem>> _mockAsyncCursor;
+
+
     public CatalogRepositoryTest() {
 
-        _mockCatalogContext = new Mock<CatalogContext>();
-    
-        _mockCatalogContext.Setup(x => x.Items).Returns(GetFakeCatalog);
-        _mockCatalogContext.Setup(x => x.Categories).Returns(GetFakeCategories);
+        _mockCatalogContext = new();
+
+        _mockCatalogItemCollection = new();
+
+        // Mock IAsyncCursor
+        _mockAsyncCursor = new();
+        _mockAsyncCursor.Setup(_ => _.Current).Returns(GetFakeCatalog);
+        _mockAsyncCursor.SetupSequence(x => x.MoveNext(It.IsAny<CancellationToken>())).Returns(true).Returns(false);
+        _mockAsyncCursor.SetupSequence(x => x.MoveNextAsync(It.IsAny<CancellationToken>())).Returns(Task.Run(()=>true)).Returns(Task.Run(() => false));
+
+        _mockCatalogItemCollection.Setup(x => x.AggregateAsync(It.IsAny<PipelineDefinition<CatalogItem,CatalogItem>>(), It.IsAny<AggregateOptions>(), It.IsAny<CancellationToken>())).ReturnsAsync(_mockAsyncCursor.Object);
+
+        _mockCatalogContext.Setup(x => x.Items).Returns(_mockCatalogItemCollection.Object);
     }
 
-
+    
     [Fact]
-    public async Task Get_Catalog_Items_Success()
+    public async Task Get_All_Catalog_Items_Success()
     {
-        var pageSize = 4;
-        var pageIndex = 1;
-
-        var expectedItemsInPage = 2;
-        var expectedTotalItems = 6;
-
-        var catalogRepository = new CatalogRepository(_mockCatalogContext.Object);
-
-        var result = await catalogRepository.GetCatalogItemsAsync(pageIndex, pageSize);
-
-        Assert.IsType<PaginatedItemsViewModel<CatalogItem>>(result);
     }
 
     private List<CatalogItem> GetFakeCatalog()

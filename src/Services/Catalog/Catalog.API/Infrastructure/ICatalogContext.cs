@@ -2,6 +2,6 @@
 
 public interface ICatalogContext
 {
-    IMongoCollection<CatalogItem> Items { get; }
-    IMongoCollection<CatalogCategory> Categories { get; }
+    public IMongoCollection<CatalogItem> Items { get; }
+    public IMongoCollection<CatalogCategory> Categories { get; }
 }
