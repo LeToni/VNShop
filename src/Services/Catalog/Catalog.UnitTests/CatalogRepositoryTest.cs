@@ -1,4 +1,5 @@
-﻿using Castle.Core.Configuration;
+﻿using System.Runtime.CompilerServices;
+using Castle.Core.Configuration;
 using Catalog.API.Infrastructure;
 using Catalog.API.Repositories;
 using Catalog.API.ViewModel;
@@ -13,8 +14,9 @@ public class CatalogRepositoryTest
     public CatalogRepositoryTest() {
 
         _mockCatalogContext = new Mock<CatalogContext>();
-
+    
         _mockCatalogContext.Setup(x => x.Items).Returns(GetFakeCatalog);
+        _mockCatalogContext.Setup(x => x.Categories).Returns(GetFakeCategories);
     }
 
 
@@ -27,7 +29,7 @@ public class CatalogRepositoryTest
         var expectedItemsInPage = 2;
         var expectedTotalItems = 6;
 
-        var catalogRepository = new CatalogRepository(_mockCatalogContext);
+        var catalogRepository = new CatalogRepository(_mockCatalogContext.Object);
 
         var result = await catalogRepository.GetCatalogItemsAsync(pageIndex, pageSize);
 

@@ -1,14 +1,16 @@
-﻿namespace Catalog.API.Infrastructure;
+﻿using Microsoft.Extensions.Options;
+
+namespace Catalog.API.Infrastructure;
 
 public class CatalogContext : ICatalogContext
 {
-    public CatalogContext(IConfiguration configuration)
+    public CatalogContext(IOptions<CatalogDatabaseSettings> catalogDatabaseSettings)
     {
-        var client = new MongoClient(configuration.GetValue<string>("DatabaseSettings:ConnectionString"));
-        var database = client.GetDatabase(configuration.GetValue<string>("DatabaseSettings:DatabaseName"));
+        var client = new MongoClient(catalogDatabaseSettings.Value.ConnectionString);
+        var database = client.GetDatabase(catalogDatabaseSettings.Value.DatabaseName);
 
-        Items = database.GetCollection<CatalogItem>(configuration.GetValue<string>("DatabaseSettings:CatalogItemsCollectionName"));
-        Categories = database.GetCollection<CatalogCategory>(configuration.GetValue<string>("DatabaseSettings:CatalogCategoriesCollectionName"));
+        Items = database.GetCollection<CatalogItem>(catalogDatabaseSettings.Value.CatalogItemsCollectionName);
+        Categories = database.GetCollection<CatalogCategory>(catalogDatabaseSettings.Value.CatalogCategoriesCollectionName);
 
     }
 
