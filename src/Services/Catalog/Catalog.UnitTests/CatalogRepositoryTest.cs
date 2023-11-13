@@ -1,138 +1,66 @@
-﻿using Catalog.API.Infrastructure;
-using MongoDB.Driver;
-using Moq;
+﻿namespace Catalog.UnitTests;
 
-namespace Catalog.UnitTests;
-
-public class CatalogRepositoryTest
+public class CatalogRepositoryTest : BaseTest
 {
-    private Mock<ICatalogContext> _mockCatalogContext;
-    private Mock<IMongoCollection<CatalogItem>> _mockCatalogItemCollection;
-    private Mock<IAsyncCursor<CatalogItem>> _mockAsyncCursor;
-
+    private readonly CatalogRepository repository;
 
     public CatalogRepositoryTest() {
-
-        _mockCatalogContext = new();
-
-        _mockCatalogItemCollection = new();
-
-        // Mock IAsyncCursor
-        _mockAsyncCursor = new();
-        _mockAsyncCursor.Setup(_ => _.Current).Returns(GetFakeCatalog);
-        _mockAsyncCursor.SetupSequence(x => x.MoveNext(It.IsAny<CancellationToken>())).Returns(true).Returns(false);
-        _mockAsyncCursor.SetupSequence(x => x.MoveNextAsync(It.IsAny<CancellationToken>())).Returns(Task.Run(()=>true)).Returns(Task.Run(() => false));
-
-        _mockCatalogItemCollection.Setup(x => x.AggregateAsync(It.IsAny<PipelineDefinition<CatalogItem,CatalogItem>>(), It.IsAny<AggregateOptions>(), It.IsAny<CancellationToken>())).ReturnsAsync(_mockAsyncCursor.Object);
-
-        _mockCatalogContext.Setup(x => x.Items).Returns(_mockCatalogItemCollection.Object);
+        repository = new CatalogRepository(_context);
     }
 
     
     [Fact]
     public async Task Get_All_Catalog_Items_Success()
     {
+        var pageSize = 4;
+        var pageIndex = 1;
+
+        var expectedItemsInPage = 2;
+        var expectedTotalItems = 6;
+
+        var result = await repository.GetCatalogItemsAsync(pageIndex, pageSize);
+
+        var page = Assert.IsAssignableFrom<PaginatedItemsViewModel<CatalogItem>>(result);
+
+        Assert.Equal(expectedTotalItems, page.Count);
+        Assert.Equal(pageIndex, page.PageIndex);
+        Assert.Equal(pageSize, page.PageSize);
+        Assert.Equal(expectedItemsInPage, page.Data.Count());
     }
 
-    private List<CatalogItem> GetFakeCatalog()
+    [Fact]
+    public async Task Get_Specific_Catalog_Items_Success()
     {
-        return new List<CatalogItem>()
-        {
-            new()
-            {
-                Id = "FakeIdA",
-                Name = "Fake Name 1",
-                Price = 10.00M,
-                Description = "Fake Description 1",
-                Category = "Fake Category 2",
-                Image = "FakeImage1.jpg",
-                rating = new(){
-                    Rate = 1.0,
-                    Count = 100
-                } 
-            },
-            new()
-            {
-                Id = "FakeIdB",
-                Name = "Fake Name 2",
-                Price = 10.00M,
-                Description = "Fake Description 2",
-                Category = "Fake Category 2",
-                Image = "FakeImage2.jpg",
-                rating = new(){
-                    Rate = 1.0,
-                    Count = 100
-                }
-            },
-            new()
-            {
-                Id = "FakeIdB3",
-                Name = "Fake Name 3",
-                Price = 20.00M,
-                Description = "Fake Description 3",
-                Category = "Fake Category 3",
-                Image = "FakeImage3.jpg",
-                rating = new(){
-                    Rate = 1.0,
-                    Count = 100
-                }
-            },
-            new()
-            {
-                Id = "FakeId4",
-                Name = "Fake Name 4",
-                Price = 20.00M,
-                Description = "Fake Description 4",
-                Category = "Fake Category 4",
-                Image = "FakeImage4.jpg",
-                rating = new(){
-                    Rate = 1.0,
-                    Count = 100
-                }
-            },
-            new()
-            {
-                Id = "FakeId5",
-                Name = "Fake Name 5",
-                Price = 20.00M,
-                Description = "Fake Description 5",
-                Category = "Fake Category 5",
-                Image = "FakeImage5.jpg",
-                rating = new(){
-                    Rate = 1.0,
-                    Count = 100
-                }
-            },
-            new()
-            {
-                Id = "FakeId6",
-                Name = "Fake Name 6",
-                Price = 20.00M,
-                Description = "Fake Description 6",
-                Category = "Fake Category 6",
-                Image = "FakeImage6.jpg",
-                rating = new(){
-                    Rate = 1.0,
-                    Count = 100
-                }
-            }
-        };
+
+        var catalogId = "602d2149e773f2a3990b47f8";
+        var expectedCatalogName = "Fake Name 4";
+
+        var result = await repository.GetCatalogItemAsync(catalogId);
+
+        var actualItem = Assert.IsAssignableFrom<CatalogItem>(result);
+
+        Assert.Equal(catalogId, actualItem.Id);
+        Assert.Equal(expectedCatalogName, actualItem.Name);
     }
 
-    private List<CatalogCategory> GetFakeCategories()
+    [Fact]
+    public async Task Get_Catalog_Items_By_Category_Success()
     {
-        return new List<CatalogCategory>()
-        {
-            new()
-            {
-                Id = "FakeIdA",
-                Name = "Fake Category Name A"
-            },
-            new()
-            {
-                Id = "FakeIdB",
-                Name = "Fake Category Name B"
-            }
-        };
+        var pageSize = 4;
+        var pageIndex = 0;
+
+        var category = "Fake Category 5";
+
+        var expectedItemsInPage = 2;
+        var expectedTotalItems = 2;
+
+        var result = await repository.GetCatalogItemsByCategoryAsync(category, pageIndex, pageSize);
+
+        var page = Assert.IsAssignableFrom<PaginatedItemsViewModel<CatalogItem>>(result);
+
+        Assert.Equal(expectedTotalItems, page.Count);
+        Assert.Equal(pageIndex, page.PageIndex);
+        Assert.Equal(pageSize, page.PageSize);
+        Assert.Equal(expectedItemsInPage, page.Data.Count());
     }
 }
