@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.API.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [ApiController]
 public class CatalogController : ControllerBase
 {
@@ -14,7 +14,7 @@ public class CatalogController : ControllerBase
         _catalogRepository = catalogRepository ?? throw new ArgumentNullException(nameof(catalogRepository));
     }
 
-    [HttpGet]
+    [HttpGet("items")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<PaginatedItemsViewModel<CatalogItem>>> CatalogItems([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 10)
     {
