@@ -1,8 +1,11 @@
-﻿namespace Catalog.API.Entities
+﻿namespace Catalog.API.Entities;
+
+public class CatalogRating
 {
-    public class CatalogRating
-    {
-        public double rate { get; set; }
-        public long count { get; set; }
-    }
+    [BsonElement("count")]
+    public long Count { get; set; }
+
+    [BsonElement("rate")]
+    public double Rate { get; set; }
+
 }
