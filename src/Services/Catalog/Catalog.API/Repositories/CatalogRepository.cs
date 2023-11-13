@@ -30,8 +30,11 @@ public class CatalogRepository : ICatalogRepository
             .Find(_ => true)
             .CountDocumentsAsync();
 
-        var itemsOnPage = await _catalogContext.Items.Find(_ => true)
-           .ToListAsync();
+        var itemsOnPage = await _catalogContext.Items
+            .Find(_ => true)
+            .Skip(pageIndex * pageSize)
+            .Limit(pageSize)
+            .ToListAsync();
 
         var pageItemModel = new PaginatedItemsViewModel<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage);
 
