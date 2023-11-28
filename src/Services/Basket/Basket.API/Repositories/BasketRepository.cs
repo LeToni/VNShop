@@ -2,25 +2,35 @@ namespace Basket.API.Repositories;
 
 public class BasketRepository : IBasketRepository
 {
-    private readonly ConnectionMultiplexer _redisCache;
+    private readonly IDistributedCache _cache;
 
-    public BasketRepository(ConnectionMultiplexer cache)
+    public BasketRepository(IDistributedCache cache)
     {
-        _redisCache = cache ?? throw new ArgumentNullException();
+        _cache = cache ?? throw new ArgumentNullException();
     }
 
-    public Task<bool> DeleteBasketAsync(string customerId)
+    public async Task DeleteBasketAsync(string customerId)
     {
-        throw new NotImplementedException();
+        await _cache.RemoveAsync(customerId);
     }
 
-    public Task<CustomerBasket> GetCustomerBasketAsync(string customerId)
+    public async Task<CustomerBasket?> GetCustomerBasketAsync(string customerId)
     {
-        throw new NotImplementedException();
+        var basket = await _cache.GetStringAsync(customerId);
+
+        if (String.IsNullOrEmpty(basket))
+        {
+            return null;
+        }
+
+        return JsonConvert.DeserializeObject<CustomerBasket>(basket);
     }
 
-    public Task<CustomerBasket> UpdateBasketAsync(CustomerBasket basket)
+    public async Task<CustomerBasket?> UpdateBasketAsync(CustomerBasket basket)
     {
-        throw new NotImplementedException();
+        await _cache.SetStringAsync(basket.BuyerId, JsonConvert.SerializeObject(basket));
+
+        return await GetCustomerBasketAsync(basket.BuyerId);
     }
+
 }
